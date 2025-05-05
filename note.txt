@@ -1,0 +1,10 @@
+# train ZoeDepth
+pip install timm==0.6.7
+
+# export wandb api key
+nano ~/.zshrc
+export WANDB_API_KEY = "..."
+source ~/.zshrc
+
+# kaggle api key
+coppy kaggle_api.json to "~/.kaggle"
