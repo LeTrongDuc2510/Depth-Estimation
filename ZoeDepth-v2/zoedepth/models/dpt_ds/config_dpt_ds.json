@@ -1,0 +1,44 @@
+{
+    "model": {
+        "name": "dpt_ds",
+        "version_name": "v1",
+        "midas_model_type" : "DPT_BEiT_L_384",
+        "memory_efficient": true,
+        "img_size": [384, 512]
+    },
+
+    "train": {
+        "train_midas": true,
+        "use_pretrained_midas": false,
+        "trainer": "dpt_ds",
+        "epochs": 5,
+        "bs": 16,
+        "optim_kwargs": {"lr": 0.000161, "wd": 0.01},
+        "sched_kwargs": {"div_factor": 1, "final_div_factor": 10000, "pct_start": 0.7, "three_phase":false, "cycle_momentum": true},
+        "same_lr": false,
+        "w_ssi": 1,
+        "w_msi": 0.5,
+        "w_deep_sup": 0.5,
+        "avoid_boundary": false,
+        "random_crop": false,
+        "input_width": 640,
+        "input_height": 480,
+        "midas_lr_factor": 1,
+        "encoder_lr_factor":1,
+        "pos_enc_lr_factor":1,
+        "freeze_midas_bn": true
+    },
+
+    "infer":{
+        "train_midas": false,
+        "use_pretrained_midas": false,
+        "pretrained_resource" : "url::https://github.com/isl-org/ZoeDepth/releases/download/v1.0/ZoeD_M12_N.pt",
+        "force_keep_ar": true
+    },
+
+    "eval":{
+        "train_midas": false,
+        "use_pretrained_midas": false,
+        "pretrained_resource" : "url::https://github.com/isl-org/ZoeDepth/releases/download/v1.0/ZoeD_M12_N.pt"
+    }
+}
