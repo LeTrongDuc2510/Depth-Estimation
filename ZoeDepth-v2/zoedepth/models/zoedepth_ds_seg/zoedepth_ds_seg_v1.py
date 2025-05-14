@@ -27,86 +27,13 @@ import itertools
 import torch
 import torch.nn as nn
 from zoedepth.models.depth_model import DepthModel
-<<<<<<< HEAD
 from zoedepth.models.base_models.midas_seg import MidasSegCore
-=======
-from zoedepth.models.base_models.midas import MidasCore
->>>>>>> a23fda430cb3bb517e931e0120e6de8dee809083
 from zoedepth.models.layers.attractor import AttractorLayer, AttractorLayerUnnormed
 from zoedepth.models.layers.dist_layers import ConditionalLogBinomial
 from zoedepth.models.layers.localbins_layers import (Projector, SeedBinRegressor,
                                             SeedBinRegressorUnnormed)
 from zoedepth.models.model_io import load_state_from_resource
 
-<<<<<<< HEAD
-=======
-class Interpolate(nn.Module):
-    """Interpolation module.
-    """
-
-    def __init__(self, scale_factor, mode, align_corners=False):
-        """Init.
-
-        Args:
-            scale_factor (float): scaling
-            mode (str): interpolation mode
-        """
-        super(Interpolate, self).__init__()
-
-        self.interp = nn.functional.interpolate
-        self.scale_factor = scale_factor
-        self.mode = mode
-        self.align_corners = align_corners
-
-    def forward(self, x):
-        """Forward pass.
-
-        Args:
-            x (tensor): input
-
-        Returns:
-            tensor: interpolated data
-        """
-
-        x = self.interp(
-            x, scale_factor=self.scale_factor, mode=self.mode, align_corners=self.align_corners
-        )
-
-        return x
-
-class SegmentationHead(nn.Module):
-    def __init__(self, head_features_1, head_features_2):
-        super(SegmentationHead, self).__init__()
-
-        # depth head
-        self.output_depth = nn.Sequential(
-            nn.Conv2d(head_features_1, head_features_1 // 2, kernel_size=3, stride=1, padding=1),
-            Interpolate(scale_factor=2, mode="bilinear", align_corners=True),
-            nn.Conv2d(head_features_1 // 2, head_features_2, kernel_size=3, stride=1, padding=1),
-            nn.ReLU(True),
-            nn.Conv2d(head_features_2, 1, kernel_size=1, stride=1, padding=0),
-            nn.ReLU(True),
-            nn.Identity(),
-        )
-
-        # segmentation head
-        self.output_seg = nn.Sequential(
-            nn.Conv2d(head_features_1, head_features_1 // 2, kernel_size=3, stride=1, padding=1),
-            Interpolate(scale_factor=2, mode="bilinear", align_corners=True),
-            nn.Conv2d(head_features_1 // 2, head_features_2, kernel_size=3, stride=1, padding=1),
-            nn.ReLU(True),
-            nn.Conv2d(head_features_2, 14, kernel_size=1, stride=1, padding=0),
-            nn.ReLU(True),
-            nn.Identity(),
-        )
-
-    def forward(self, x):
-        depth = self.ori_output_conv(x)
-        segmentation = self.output_seg(x)
-        return depth, segmentation
-
-
->>>>>>> a23fda430cb3bb517e931e0120e6de8dee809083
 class ZoeDepth_DS_Seg(DepthModel):
     def __init__(self, core, relative=False, n_bins=64, bin_centers_type="softplus", bin_embedding_dim=128, min_depth=1e-3, max_depth=10,
                  n_attractors=[16, 8, 4, 1], attractor_alpha=300, attractor_gamma=2, attractor_kind='sum', attractor_type='exp', min_temp=5, max_temp=50, train_midas=True,
@@ -197,10 +124,7 @@ class ZoeDepth_DS_Seg(DepthModel):
             last_in, bin_embedding_dim, n_classes=n_bins, min_temp=min_temp, max_temp=max_temp)
 
         num_out_features = self.core.output_channels # [256, 256, 256, 256, 256]
-<<<<<<< HEAD
         
-=======
->>>>>>> a23fda430cb3bb517e931e0120e6de8dee809083
         self.deepsup_projectors = nn.ModuleList([
             nn.Conv2d(num_out_features[i], 1, kernel_size=1, stride=1, padding=0) 
             for i in range(len(num_out_features))
@@ -244,15 +168,10 @@ class ZoeDepth_DS_Seg(DepthModel):
         out_ = out[1:] # remove the first one, which is the last one which is 32 channels
         deep_sup_outputs = [self.deepsup_projectors[i](out_[i]) for i in range(len(out_))]
         deep_sup_segmentation_outputs = [self.deepsup_segmentation_projectors[i](out_[i]) for i in range(len(out_))]
-<<<<<<< HEAD
 
         output['deep_sup'] = deep_sup_outputs
         output['deep_sup_segmentation'] = deep_sup_segmentation_outputs
 
-=======
-        output['deep_sup'] = deep_sup_outputs
-        output['deep_sup_segmentation'] = deep_sup_segmentation_outputs
->>>>>>> a23fda430cb3bb517e931e0120e6de8dee809083
         if self.relative:
             output['metric_depth'] = rel_depth
             return output
@@ -350,7 +269,6 @@ class ZoeDepth_DS_Seg(DepthModel):
 
     @staticmethod
     def build(midas_model_type="DPT_BEiT_L_384", pretrained_resource=None, use_pretrained_midas=False, train_midas=False, freeze_midas_bn=True, **kwargs):
-<<<<<<< HEAD
         core = MidasSegCore.build(midas_model_type=midas_model_type, use_pretrained_midas=use_pretrained_midas,
                                train_midas=train_midas, fetch_features=True, freeze_bn=freeze_midas_bn, **kwargs)
 
@@ -367,23 +285,6 @@ class ZoeDepth_DS_Seg(DepthModel):
         if "model" in state_dict:
             model.load_state_dict(state_dict["model"], strict=False)
             print(f"Load Checkpoint from {kwargs['checkpoint']} successfully!")
-=======
-        core = MidasCore.build(midas_model_type=midas_model_type, use_pretrained_midas=use_pretrained_midas,
-                               train_midas=train_midas, fetch_features=True, freeze_bn=freeze_midas_bn, **kwargs)
-
-        # core.core.scratch.output_conv = SegmentationHead(head_features_1=256, head_features_2=32)
-
-        print(f"Output conv type after assignment: {type(core.core.scratch.output_conv)}")
-        model = ZoeDepth_DS_Seg(core, **kwargs)
-        # No need to load ZoeDepth pretrained
-        if pretrained_resource:
-            assert isinstance(pretrained_resource, str), "pretrained_resource must be a string"
-            # model = load_state_from_resource(model, pretrained_resource)
-            state_dict = torch.load(kwargs["checkpoint"], map_location='cpu')
-            if "model" in state_dict:
-                model.load_state_dict(state_dict["model"])
-                print(f"Load Checkpoint from {kwargs['checkpoint']} successfully!")
->>>>>>> a23fda430cb3bb517e931e0120e6de8dee809083
         return model
 
     @staticmethod

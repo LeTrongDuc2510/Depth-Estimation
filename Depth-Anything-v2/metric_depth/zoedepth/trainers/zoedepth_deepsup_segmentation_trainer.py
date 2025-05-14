@@ -102,13 +102,10 @@ class Trainer(BaseTrainer):
                 vutils.save_image(pred_depths/10.0, 'prediction.png')
                 vutils.save_image(depths_gt/10.0, 'target.png')
             else:
-<<<<<<< HEAD
                 vutils.save_image((pred_depths.unsqueeze(1) - pred_depths.min())/(pred_depths.max() - pred_depths.min()), 'prediction.png')
                 vutils.save_image((depths_gt - depths_gt.min())/(depths_gt.max() - depths_gt.min()), 'target.png')
-=======
-                vutils.save_image(pred_depths, 'prediction.png')
-                vutils.save_image(depths_gt, 'target.png')
->>>>>>> a23fda430cb3bb517e931e0120e6de8dee809083
+                # vutils.save_image(pred_depths, 'prediction.png')
+                # vutils.save_image(depths_gt, 'target.png')
                 
             vutils.save_image(torch.argmax(output['segmentation'], dim=1, keepdim=True) / 13.0, 'prediction_segmentation.png')
             vutils.save_image(segmentations_gt / 13.0, 'segmentation_gt.png')
@@ -185,11 +182,7 @@ class Trainer(BaseTrainer):
         pred_depths = torch.zeros((1, 1, x_np.shape[0], x_np.shape[1]), device=pred_depths_cropped.device, dtype=pred_depths_cropped.dtype)
         pred_depths[:, :, top:bottom, left:right] = pred_depths_cropped
 
-<<<<<<< HEAD
         return pred_depths, pred_seg
-=======
-        return pred_depths
->>>>>>> a23fda430cb3bb517e931e0120e6de8dee809083
 
     def validate_on_batch(self, batch, val_step):
         images = batch['image'].to(self.device)
